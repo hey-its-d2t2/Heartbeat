@@ -3,6 +3,7 @@ package com.heartBeat.conversations;
 import com.heartBeat.profiles.ProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +27,7 @@ public class ConversationController {
 
     @PostMapping("/conversations")
     public  Conversation createNewConversation(@RequestBody CreateConversationRequest request){
-        profileRepository.findById(request.profileId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
+        profileRepository.findById(request.profileId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "Unable to find profile with id " + request.profileId()));
 
         Conversation conversation = new Conversation(
                 UUID.randomUUID().toString(),
@@ -37,6 +38,27 @@ public class ConversationController {
         conversationRepository.save(conversation);
         return conversation;
 
+    }
+    @PostMapping("/conversations/{conversationId}")
+    public Conversation addMessageConversation(
+            @PathVariable String conversationId,
+            @RequestBody ChatMessage chatMessage
+    ){
+       Conversation conversation = conversationRepository.findById(conversationId)
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Unable to find conversation  with id"+conversationId));
+
+        profileRepository.findById(chatMessage.authorId())
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Unable to find profile  with id"+chatMessage.authorId()));
+
+        //ToDo need to validate that the author of a message happens to be only the profile is associated with the message user
+        ChatMessage messageTime = new ChatMessage(
+               chatMessage.messageText(),
+               chatMessage.authorId(),
+               LocalDateTime.now()
+       );
+        conversation.ChatMessage().add(chatMessage);
+        conversationRepository.save(conversation);
+        return conversation;
     }
 
     public  record CreateConversationRequest(
