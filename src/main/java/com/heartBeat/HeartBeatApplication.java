@@ -30,11 +30,25 @@ public class HeartBeatApplication  implements CommandLineRunner {
 
 	public  void run(String... args){
 		//System.out.println("Running");
+		profileRepository.deleteAll();
+		conversationRepository.deleteAll();
 		Profile profile = new Profile(
 				"1",
 				"Deepak",
 				"Singh",
 				23,
+				"Indian",
+				Gender.MALE,
+				"Software Developer",
+				"abc.jpg",
+				"INTP"
+		);
+		profileRepository.save(profile);
+		profile = new Profile(
+				"2",
+				"Timpal",
+				"Mahto",
+				22,
 				"Indian",
 				Gender.MALE,
 				"Software Developer",
